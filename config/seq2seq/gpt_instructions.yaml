@@ -1,0 +1,21 @@
+universal:
+  prefix: "\n Entities:"
+  end: "\n"
+entity:
+  instructionformat: 'Labelname'
+  context_left: 'Text:'
+  context_right: "\n"
+  context_mid: "\n Entities:"
+  inputformat: "Text: {text}"
+  prefix: "\n Entities:"
+  end: "\n"
+  labelformat: 'temp' # temp, tanl, sel
+relation:
+  instructionformat: 'Labelname'
+  context_left: 'Text:'
+  context_right: "\n"
+  context_mid: "\n Pairs:"
+  inputformat: "Text: {text}"
+  prefix: "\n Pairs:"
+  end: "\n"
+  labelformat: 'raw' # temp, tanl, sel

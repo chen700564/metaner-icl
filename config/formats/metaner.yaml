@@ -1,0 +1,13 @@
+universal:
+  prefix: '<extra_id_6>'
+  end: '<extra_id_5>'
+  modeltype: 'metaner'
+  enhance: 'anonymization'
+entity:
+  instructionformat: 'None'
+  context_left: '<extra_id_4>'
+  context_right: '<extra_id_5>'
+  context_mid: '<extra_id_6>'
+  inputformat: "<extra_id_4> {text}"
+  prefix: '<extra_id_6>'
+  end: '<extra_id_5>'

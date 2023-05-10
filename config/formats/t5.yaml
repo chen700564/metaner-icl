@@ -1,0 +1,13 @@
+universal:
+  prefix: "<pad>"
+  end: "</s>"
+  modeltype: "t5"
+  enhance: 'None'
+entity:
+  instructionformat: 'Task'
+  context_left: 'Text:'
+  context_right: "\n"
+  context_mid: "\n Entities:"
+  inputformat: "Text: {text}"
+  prefix: "\n Entities:"
+  end: "\n"

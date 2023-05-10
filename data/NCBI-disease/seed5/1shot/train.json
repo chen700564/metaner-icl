@@ -1,0 +1,1 @@
+{"tokens": ["Clinical", "use", "of", "DNA", "markers", "linked", "to", "the", "gene", "for", "Duchenne", "muscular", "dystrophy", "."], "entity": [{"type": "Disease", "offset": [10, 11, 12], "text": "Duchenne muscular dystrophy"}], "relation": [], "event": []}

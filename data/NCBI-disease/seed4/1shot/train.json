@@ -1,0 +1,1 @@
+{"tokens": ["This", "approach", "now", "allows", "HPRT", "mutation", "detection", "in", "50", "percent", "of", "the", "cases", "of", "Lesch", "-", "Nyhan", "syndrome", "."], "entity": [{"type": "Disease", "offset": [14, 15, 16, 17], "text": "Lesch - Nyhan syndrome"}], "relation": [], "event": []}

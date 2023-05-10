@@ -1,0 +1,11 @@
+universal:
+  prefix: '<extra_id_6>'
+  end: '<extra_id_5>'
+  modeltype: 't5'
+entity:
+  context_left: 'None'
+  context_right: 'None'
+  context_mid: 'None'
+  inputformat: "<extra_id_4> {text}"
+  prefix: '<extra_id_6>'
+  end: '<extra_id_5>'

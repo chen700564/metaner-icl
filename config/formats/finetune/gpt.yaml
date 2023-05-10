@@ -1,0 +1,11 @@
+universal:
+  prefix: "\n Entities:"
+  end: "\n"
+  modeltype: "gpt"
+entity:
+  context_left: 'Text:'
+  context_right: "\n"
+  context_mid: "\n Entities:"
+  inputformat: "Text: {text}"
+  prefix: "\n Entities:"
+  end: "\n"
