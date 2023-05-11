@@ -7,8 +7,8 @@
 * [Environment](#Environment)
 * [Pre-training](#pre-training)
 * [In-context Learning](#in-context-learning)
-* [Fewshot Fine-tuning](#Fewshot-Fine-tuning)
 * [Model Evaluation](#Model-Evaluation)
+* [Fewshot Fine-tuning](#Fewshot-Fine-tuning)
 
 ### Environment
 
@@ -84,7 +84,20 @@ Note that due to possible variations in the order of demonstrations, there may b
 run:
 
 ```bash
-python finetuning.py -dataset conll03 --shot 5 --plm plm/metaner --formatsconfig config/formats/finetune/t5.yaml --output_dir tmp/conll03/metaner-ft \
+python finetuning.py \
+--dataset conll03 \
+--shot 5 \
+--plm plm/metaner \
+--formatsconfig config/formats/finetune/t5.yaml \
+--output_dir tmp/conll03/metaner-ft \
+--do_train \
+--per_device_train_batch_size 4 \
+--save_strategy no \
+--num_train_epochs 200 \
+--learning_rate 1e-4 \
+--save_total_limit 1 \
+--warmup_ratio 0.06 \
+--remove_unused_columns False 
 ```
 The result will be in output_dir. You can change the `shot` for different shot and `dataset` for different dataset.
 
