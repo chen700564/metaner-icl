@@ -26,10 +26,9 @@ The pre-trained model is in huggingface: [metaner](https://huggingface.co/jiawei
 We use one A100-80g to pre-train the t5-v1_1-large and you can run:
 
 ```bash
-python pretrain_full.py --plm google/t5-v1_1-large --do_train --per_device_train_batch_size 8 --learning_rate 5e-5 \
+python pretrain.py --plm google/t5-v1_1-large --do_train --per_device_train_batch_size 8 --learning_rate 5e-5 \
 --logging_step 1000 \
 --output_dir plm/metaner \
---datasetconfig config/pretrain/pretrain_dataset.yaml \
 --evaluation_strategy steps \
 --do_eval \
 --per_device_eval_batch_size 32 \
@@ -41,11 +40,11 @@ python pretrain_full.py --plm google/t5-v1_1-large --do_train --per_device_train
 --warmup_steps 10000 \
 --save_total_limit 50 \
 --remove_unused_columns False \
---dataset pretrain 
+--dataset pretrain_data 
 ```
-The pretraining dataset should be putted in path `pretrain/`
+The pretraining dataset should be putted in path `pretrain_data/`
 ```text
-pretrain/
+pretrain_data/
 ├── ICL_train.json
 ├── ICL_dev.json
 ├── label2id.json
@@ -70,7 +69,7 @@ The result will be in output_dir. You can change the `shot_num` for different sh
 
 For different pre-trained model, you should change `plm` and `formatsconfig`.
 
-For t5 model, you can change the formatsconfig to `config/formats/t5.yaml`. For gpt/opt model, you can change the formatsconfig to `config/formats/gpt.yaml`.
+For t5 model, you can change the formatsconfig to `config/formats/t5.yaml`. For gpt/opt model, you can change the formatsconfig to `config/formats/gpt.yaml/config/formats/opt.yaml`.
 
 ### Model Evaluation
 You can run:
@@ -85,7 +84,7 @@ run:
 
 ```bash
 python finetuning.py \
---dataset conll03 \
+--dataset data/conll03 \
 --shot 5 \
 --plm plm/metaner \
 --formatsconfig config/formats/finetune/t5.yaml \
@@ -105,3 +104,15 @@ For different pre-trained model, you should change `plm` and `formatsconfig`.
 
 For t5/metaner model, the formatsconfig should be `config/formats/finetune/t5.yaml`. For gpt model, it should be `config/formats/finetune/t5.yaml`.
 
+For prediction, you can run `predictor.py ` and set `context_num` is -1:
+```bash
+python predictor.py --output_dir tmp/conll03/metaner-ft \
+--plm plm/metaner \
+--formatsconfig config/formats/finetune/t5.yaml \
+--testset data/conll03 \
+--do_predict \
+--remove_unused_columns False \
+--shot_num 5 \
+--context_num -1 \
+--per_device_eval_batch_size 16
+```

@@ -1,7 +1,8 @@
 universal:
   prefix: '<extra_id_6>'
   end: '<extra_id_5>'
-  modeltype: 't5'
+  modeltype: 'metaner'
+  enhance: 'reject'
 entity:
   context_left: 'None'
   context_right: 'None'

@@ -122,7 +122,7 @@ def gettestset(datapath ,tokenizer, args, formats):
             labelindex[label] += 1
     trainset = [trainset[i] for i in newtrainset]
     nums = len(trainset)
-    if nums < args.context_num:
+    if nums < args.context_num and args.context_num > 0:
         args.context_num = nums
     instances = []
     mapping = {}
@@ -171,7 +171,7 @@ def gettestset(datapath ,tokenizer, args, formats):
         
         if args.modeltype != 'metaner':
             textids = textids + formats['entity']['prefix']
-            if args.modeltype == 't5':
+            if args.modeltype == 't5' and args.context_num > 0:
                 textids = textids + tokenizer.convert_tokens_to_ids(['<extra_id_0>'])
         
         limit = max_length - len(textids)
@@ -182,7 +182,6 @@ def gettestset(datapath ,tokenizer, args, formats):
         if args.context_num <= 0:
             newinstance = copy.deepcopy(instance)
             newinstance['index'] = testindex
-            newinstance['task'] = args.task
             newinstance['input_ids'] = fullinputids + textids
             newinstance['targetlabel'] = targets
             if 'anonymization' in args.enhance:
@@ -223,7 +222,7 @@ def predict(model, dataset, data_collator, training_args, args, tokenizer, endid
     training_args.output_dir = training_args.output_dir + '/' + str(tag)
 
     if model is None:
-        if args.modeltype == 'seq2seq':
+        if args.modeltype == 'metaner':
             model = AutoModelForSeq2SeqLM.from_pretrained(
                 training_args.output_dir,
             )
@@ -232,10 +231,6 @@ def predict(model, dataset, data_collator, training_args, args, tokenizer, endid
                 training_args.output_dir,
                 pad_token_id=tokenizer.eos_token_id, torch_dtype=torch.float16
             )
-        elif args.modeltype == 'opt':
-            model = AutoModelForCausalLM.from_pretrained(
-                training_args.output_dir, torch_dtype=torch.float16
-            ) 
 
     os.makedirs(training_args.output_dir, exist_ok=True)
 
@@ -274,7 +269,7 @@ def predict(model, dataset, data_collator, training_args, args, tokenizer, endid
                     generated = np.expand_dims(generated,1)
                     preds.append(generated)
                 preds = np.concatenate(preds,axis=1)
-                if args.modeltype == 't5':
+                if args.modeltype == 't5' and args.context_num > 0:
                     preds = preds[:,1:]
                 preds, golds, targetlabels, generations = tokenid2result(preds,endid,newdataset,tokenizer)
                 for i in range(len(preds)):

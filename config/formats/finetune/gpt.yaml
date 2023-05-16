@@ -2,6 +2,7 @@ universal:
   prefix: "\n Entities:"
   end: "\n"
   modeltype: "gpt"
+  enhance: 'reject'
 entity:
   context_left: 'Text:'
   context_right: "\n"

@@ -19,6 +19,7 @@ import gc
 import torch
 import tqdm
 
+from utils import tokenid2result
 
 logging.basicConfig(level = logging.INFO)
 
@@ -92,7 +93,7 @@ class DataCollator:
         return inputs
 
 def getinstruction(target_labels, mapping, modeltype):
-    if modeltype == 't5':
+    if modeltype == 'metaner':
         insturction = ''
         for label in target_labels:
             insturction = insturction + ' <extra_id_7> ' + mapping[label]
@@ -105,7 +106,7 @@ def getinstruction(target_labels, mapping, modeltype):
 
 
 class Seq2seqDataset(Dataset):
-    def __init__(self, dataset, targetlabels, tokenizer, formats, endid, modeltype, min_labels= None):
+    def __init__(self, dataset, targetlabels, tokenizer, formats, endid, modeltype, min_labels= None, enhance='none'):
         super(Seq2seqDataset).__init__()
         self.targetlabels = targetlabels
         if dataset is not list:
@@ -117,11 +118,11 @@ class Seq2seqDataset(Dataset):
                         instance['entity'] = instance['entity_offsets']
                     instance['entity'] = sorted(instance['entity'],key=lambda i: i['offset'][0]) 
                     self.dataset.append(instance)
-                    # reject
-                    for i in range(5):
-                        newinstance = self.getnegdata(instance)
-                        if newinstance is not None:
-                            self.dataset.append(newinstance)
+                    if 'reject' in enhance:
+                        for i in range(5):
+                            newinstance = self.getnegdata(instance)
+                            if newinstance is not None:
+                                self.dataset.append(newinstance)
         else:
             self.dataset = dataset
         
@@ -130,6 +131,7 @@ class Seq2seqDataset(Dataset):
         self.formats = formats
         self.endid = endid
         self.modeltype = modeltype
+        self.enhance = enhance
 
         if min_labels is None or max_labels is None or min_labels > max_labels:
             self.min_labels = len(targetlabels)
@@ -153,7 +155,7 @@ class Seq2seqDataset(Dataset):
                 outputids += outputid
                 labels += outputid
                 index += 1
-            else:
+            elif 'reject' in self.enhance:
                 text = entity['text'] + ' is'
                 if index == 0:
                     outputid = tokenizer.encode(text, add_special_tokens=False)
@@ -230,7 +232,7 @@ class Seq2seqDataset(Dataset):
 
         inputids = instructionid + inputids
 
-        if self.modeltype == 't5':
+        if self.modeltype == 'metaner':
             instance = {
                 'input_ids': inputids,
                 'attention_mask': [1] * len(inputids),
@@ -263,10 +265,10 @@ class Arguments:
         },
     )
     dataset: Optional[str] = field(
-        default="entity/conll03", metadata={"help": "dataset path"}
+        default="data/conll03", metadata={"help": "dataset path"}
     )
     formatsconfig: Optional[str] = field(
-        default="config/formats/finetune/t5.yaml", metadata={"help": "config file for ict"}
+        default="config/formats/finetune/t5.yaml", metadata={"help": "config file for icl formats"}
     )
     randomseed: Optional[int] = field(
         default=2333, metadata={"help": "random seed"}
@@ -278,6 +280,9 @@ class Arguments:
     input_maxlength: Optional[int] = field(
         default=100, metadata={"help": "max token id length for input instance"}
     )
+    labelformat: Optional[str] = field(
+        default='temp', metadata={"help": "format of labeled data: temp or tanl or sel or None"}
+    )
     predictfile: Optional[str] = field(
         default="prediction", metadata={"help": "name of predict file"}
     )
@@ -288,7 +293,7 @@ class Arguments:
 
 
 def modelfinetune(args, training_args, tokennum, tokenizer, data_collator, trainset, tag):
-    if args.modeltype == 't5':
+    if args.modeltype == 'metaner':
         model = AutoModelForSeq2SeqLM.from_pretrained(
             args.plm,
         )
@@ -329,21 +334,24 @@ def main():
 
     args.training = training_args.do_train
     args.testing = training_args.do_predict
-        
+    args.task = 'entity'
 
     logger.info("Options:")
     logger.info(args)
     logger.info(training_args)
 
     if '.yaml' in args.formatsconfig:
-        formatsconfig = yaml.load(open(args.formatsconfig),Loader=yaml.FullLoader)
-
-    args.modeltype = formatsconfig['universal']['modeltype']
-
+        contextconfig = yaml.load(open(args.formatsconfig),Loader=yaml.FullLoader)
+    if args.labelformat != 'None':
+        for task in contextconfig:
+            contextconfig[task]['labelformat'] = args.labelformat
+    
+    args.modeltype = contextconfig['universal']['modeltype']
+    args.enhance = contextconfig['universal']['enhance']
 
     set_seed(args.randomseed)
     tokennum = None
-    if args.modeltype == 't5':
+    if args.modeltype == 'metaner':
         tokenizer = AutoTokenizer.from_pretrained(args.plm)
         if 'additional_special_tokens' not in tokenizer.special_tokens_map or '<extra_id_0>' not in tokenizer.special_tokens_map['additional_special_tokens']:
             specicaltokens = {
@@ -359,16 +367,16 @@ def main():
 
             
     logger.info("context config:")
-    logger.info(formatsconfig)
-    args.formatsconfig = formatsconfig
+    logger.info(contextconfig)
+    args.contextconfig = contextconfig
 
     seeds = os.listdir(args.dataset)
-    formats = args.formatsconfig
+    formats = args.contextconfig
     for task in formats:
         for tag in formats[task]:
             if 'format' not in tag:
                 formats[task][tag] = tokenizer.encode(formats[task][tag], add_special_tokens=False)
-    endid = formats['universal']['end'][0] if args.modeltype == 't5' else formats['universal']['end'][-1]
+    endid = formats['universal']['end'][0] if args.modeltype == 'metaner' else formats['universal']['end'][-1]
 
     if args.debugfile != 'None':
         seed = 'seed1'
@@ -381,7 +389,7 @@ def main():
 
         targets = targetlabels[0]
         data_collator = DataCollator(tokenizer)
-        trainset = Seq2seqDataset(datasetpath+'/train.json',targets,tokenizer,formats,endid,args.modeltype,3)
+        trainset = Seq2seqDataset(datasetpath+'/train.json',targets,tokenizer,formats,endid,args.modeltype,3,args.enhance)
         dataloader = DataLoader(trainset,batch_size=1,collate_fn=data_collator)
         with open(args.debugfile,'w') as f:
             for index,batch in tqdm.tqdm(enumerate(dataloader)):
@@ -392,6 +400,7 @@ def main():
                 decoder_input_ids = batch['decoder_input_ids'].tolist()
                 f.write('raw_output\n')
                 f.write(tokenizer.decode(decoder_input_ids[0])+'\n')
+            raise
 
     for seed in seeds:
         targetlabels = []
@@ -404,7 +413,7 @@ def main():
         
 
         data_collator = DataCollator(tokenizer)
-        trainset = Seq2seqDataset(datasetpath+'/train.json',targets,tokenizer,formats,endid,args.modeltype,3)
+        trainset = Seq2seqDataset(datasetpath+'/train.json',targets,tokenizer,formats,endid,args.modeltype,3,args.enhance)
         modelfinetune(args, training_args, tokennum, tokenizer, data_collator, trainset, seed)
 
 

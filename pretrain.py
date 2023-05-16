@@ -439,11 +439,6 @@ def main():
     tokenizer.add_special_tokens(specicaltokens)
     tokennum = len(tokenizer)
 
-
-    if '.yaml' in args.datasetconfig:
-        datasetconfig = yaml.load(open(args.datasetconfig),Loader=yaml.FullLoader)
-    args.datasetconfig = datasetconfig
-
     if '.yaml' in args.formatsconfig:
         formatsconfig = yaml.load(open(args.formatsconfig),Loader=yaml.FullLoader)
     logger.info("context config:")
