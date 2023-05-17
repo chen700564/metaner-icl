@@ -286,7 +286,7 @@ def main():
 
     args, training_args = parser.parse_args_into_dataclasses()
 
-        
+    set_seed(args.randomseed)
 
     logger.info("Options:")
     logger.info(args)
@@ -371,7 +371,7 @@ def main():
 
     seeds = os.listdir(args.testset)
     for seed in seeds:
-        set_seed(args.randomseed)
+        # set_seed(args.randomseed)
         datasetpath = args.testset + '/' + seed + '/' + str(args.shot_num) + 'shot'
         testset = gettestset(datasetpath ,tokenizer, args, formats)
         endid = formats['universal']['end'][0] if args.modeltype == 't5' or args.modeltype == 'metaner' else formats['universal']['end'][-1]

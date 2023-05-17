@@ -42,8 +42,8 @@ def tokenid2result(predictions,endid,dataset,tokenizer, enhance = 'None'):
                 newmapping[mapping[label]] = label
             targetlabel = {}
             for label in newmapping:
-                if newmapping[label] in instance['targetlabel']:
-                    targetlabel[newmapping[label]] = instance['targetlabel'][newmapping[label]]
+                if label in instance['targetlabel']:
+                    targetlabel[newmapping[label]] = instance['targetlabel'][label]
             mapping = newmapping
         pred = decode(tokenizer,instance['tokens'],text,targetlabel, mapping)
         preds.append(pred)
