@@ -1,6 +1,6 @@
 # MetaNER-ICL
 
-- An implementation for ACL 2023 paper ``Learning In-context Learning for Named Entity Recognition``
+- An implementation for ACL 2023 paper [Learning In-context Learning for Named Entity Recognition](http://arxiv.org/abs/2305.11038)
 
 ## Quick links
 
