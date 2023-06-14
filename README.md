@@ -19,9 +19,9 @@ bash env.sh
 ```
 ### Pre-training
 
-The pre-training dataset is uploading.
-
 The pre-trained models are in huggingface: [metaner](https://huggingface.co/jiawei1998/metaner) and [metaner-base](https://huggingface.co/jiawei1998/metaner-base) 
+
+The pre-trained dataset is in [hugginface](https://huggingface.co/datasets/jiawei1998/metaner-pretraindata)
 
 We use one A100-80g to pre-train the t5-v1_1-large and you can run:
 
